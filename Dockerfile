@@ -1,4 +1,4 @@
-FROM nvidia/cuda:12.2.0-base-ubuntu22.04
+FROM nvidia/cuda:12.2.0-base
 
 RUN apt update && apt install -y \
     ffmpeg python3 python3-pip git && \
