@@ -12,7 +12,7 @@ COPY requirements.txt .
 RUN pip3 wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
 # Stage 2: Runtime
-FROM nvidia/cuda:11.8-runtime-ubuntu22.04
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 
 # Strip unnecessary packages and locales
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
