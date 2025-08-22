@@ -1,5 +1,5 @@
 # Stage 1: Builder
-FROM nvidia/cuda:11.8-devel-ubuntu22.04 AS builder
+FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04 AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
