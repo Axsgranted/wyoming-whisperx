@@ -10,10 +10,6 @@ RUN rm -rf /var/lib/apt/lists/* && \
     python3-dev python3-pip build-essential ffmpeg git && \
     pip3 install --upgrade pip setuptools wheel && \
     rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    python3-dev python3-pip build-essential ffmpeg git \
-    && pip3 install --upgrade pip setuptools wheel \
-    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY requirements.txt .
@@ -26,14 +22,10 @@ FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 RUN rm -rf /var/lib/apt/lists/* && \
     apt-get clean && \
     sed -i 's|http://.*.ubuntu.com|http://archive.ubuntu.com|g' /etc/apt/sources.list && \
-    apt-get update && \
-    apt-get install -y --no-install-recommends \
-    python3-dev python3-pip build-essential ffmpeg git && \
-    pip3 install --upgrade pip setuptools wheel && \
-    rm -rf /var/lib/apt/lists/*
-RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
+    apt-get update && apt-get install -y --no-install-recommends ffmpeg \
     && apt-get purge --auto-remove -y \
     && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /usr/share/locale /tmp/*
+    
 
 COPY --from=builder /wheels /wheels
 RUN pip3 install --no-index --find-links=/wheels whisperx wyoming fastapi uvicorn[standard]
