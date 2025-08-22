@@ -2,6 +2,14 @@
 FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04 AS builder
 
 ARG DEBIAN_FRONTEND=noninteractive
+RUN rm -rf /var/lib/apt/lists/* && \
+    apt-get clean && \
+    sed -i 's|http://.*.ubuntu.com|http://archive.ubuntu.com|g' /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    python3-dev python3-pip build-essential ffmpeg git && \
+    pip3 install --upgrade pip setuptools wheel && \
+    rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-dev python3-pip build-essential ffmpeg git \
     && pip3 install --upgrade pip setuptools wheel \
@@ -15,6 +23,14 @@ RUN pip3 wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
 
 # Strip unnecessary packages and locales
+RUN rm -rf /var/lib/apt/lists/* && \
+    apt-get clean && \
+    sed -i 's|http://.*.ubuntu.com|http://archive.ubuntu.com|g' /etc/apt/sources.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+    python3-dev python3-pip build-essential ffmpeg git && \
+    pip3 install --upgrade pip setuptools wheel && \
+    rm -rf /var/lib/apt/lists/*
 RUN apt-get update && apt-get install -y --no-install-recommends ffmpeg \
     && apt-get purge --auto-remove -y \
     && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /usr/share/locale /tmp/*
