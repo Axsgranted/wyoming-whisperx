@@ -23,7 +23,7 @@ RUN python3 -m pip install --upgrade pip setuptools wheel
 # Copy requirements and wheel-build all
 COPY requirements.txt /src/requirements.txt
 WORKDIR /src
-RUN pip download --dest /wheels --no-binary=:none: -r requirements.txt
+RUN pip download --dest /wheels --only-binary=:all: -r requirements.txt
 
 # Stage 2: Final runtime
 FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
