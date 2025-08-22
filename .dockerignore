@@ -1,0 +1,39 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+
+# Audio/video artifacts
+*.wav
+*.mp3
+*.mp4
+*.flac
+*.ogg
+
+# Logs and temp files
+*.log
+*.tmp
+*.cache
+
+# Jupyter notebooks and test artifacts
+*.ipynb
+notebooks/
+tests/
+examples/
+
+# Git and CI/CD metadata
+.git/
+.github/
+.gitignore
+publish.yml
+
+# Local dev configs
+.vscode/
+.env
+*.swp
+*.bak
+
+# Docker leftovers
+*.tar
+*.img
+*.iso
