@@ -31,11 +31,14 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set lowercase repository name
+        run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> $GITHUB_ENV
+      
       - name: Build & push image
         uses: docker/build-push-action@v4
         with:
           push: true
-          tags: ghcr.io/${{ github.repository }}/whisperx-wyoming:latest
+          tags: ghcr.io/${{ env.REPO_LC }}
           platforms: linux/amd64,linux/arm64
 
       - name: Show image size
