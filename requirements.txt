@@ -1,6 +1,11 @@
-torch==2.1.0+cu121
-whisperx
-wyoming
-numpy
-soundfile
-torchvision
+# requirements.txt (audited)
+torch==2.1.2+cu121         # Match CUDA version
+torchaudio==2.1.2+cu121    # Match torch version
+whisperx==3.1.1            # Stable release
+faster-whisper==0.10.0     # Optional if not using WhisperX backend
+numpy==1.26.4              # Wheel available
+scipy==1.12.0              # Wheel available
+librosa==0.10.1            # Avoid source build
+transformers==4.40.0       # Pin for reproducibility
+protobuf==4.25.3           # Avoid source build
+onnx==1.16.0               # Optional; pin if needed
