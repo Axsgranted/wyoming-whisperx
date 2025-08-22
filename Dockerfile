@@ -1,42 +1,67 @@
-# Stage 1: Builder
-FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04 AS builder
+# Stage 1: Builder — compile wheels and install heavy deps
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04 AS builder
 
-ARG DEBIAN_FRONTEND=noninteractive
-RUN rm -rf /var/lib/apt/lists/* && \
-    apt-get clean && \
-    sed -i 's|http://.*.ubuntu.com|http://archive.ubuntu.com|g' /etc/apt/sources.list && \
-    apt-get update && \
+ENV DEBIAN_FRONTEND=noninteractive \
+    PYTHON_VERSION=3.11 \
+    PIP_NO_CACHE_DIR=off \
+    PIP_WHEEL_DIR=/wheels
+
+# Install build dependencies
+RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-    python3-dev python3-pip build-essential ffmpeg git && \
-    pip3 install --upgrade pip setuptools wheel && \
-    rm -rf /var/lib/apt/lists/*
+      python${PYTHON_VERSION} \
+      python${PYTHON_VERSION}-dev \
+      python3-pip \
+      build-essential \
+      git \
+      ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
-COPY requirements.txt .
-RUN pip3 wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+# Upgrade pip, prepare wheel dir
+RUN python3 -m pip install --upgrade pip setuptools wheel
 
-# Stage 2: Runtime
-FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu22.04
+# Copy requirements and wheel-build all
+COPY requirements.txt /src/requirements.txt
+WORKDIR /src
+RUN pip download --dest /wheels --no-binary=:none: -r requirements.txt
 
-# Strip unnecessary packages and locales
-RUN rm -rf /var/lib/apt/lists/* && \
-    apt-get clean && \
-    sed -i 's|http://.*.ubuntu.com|http://archive.ubuntu.com|g' /etc/apt/sources.list && \
-    apt-get update && apt-get install -y --no-install-recommends ffmpeg \
-    && apt-get purge --auto-remove -y \
-    && rm -rf /var/lib/apt/lists/* /usr/share/doc /usr/share/man /usr/share/locale /tmp/*
-    
+# Stage 2: Final runtime
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
 
+ENV DEBIAN_FRONTEND=noninteractive \
+    LANG=C.UTF-8 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=yes
+
+# Install runtime deps
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+      python3.11 \
+      python3-pip \
+      ffmpeg \
+    && rm -rf /var/lib/apt/lists/* \
+    && ln -s /usr/bin/python3.11 /usr/bin/python
+
+# Copy and install wheels
 COPY --from=builder /wheels /wheels
-RUN pip3 install --no-index --find-links=/wheels whisperx wyoming fastapi uvicorn[standard]
+RUN pip install --upgrade pip setuptools && \
+    pip install --no-index --find-links=/wheels \
+      torch==2.1.0+cu121 \
+      whisperx \
+      wyoming \
+      numpy \
+      soundfile \
+      torchvision && \
+    rm -rf /wheels
 
-WORKDIR /app
-COPY server.py .
+# Copy entrypoint and default config
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh
 
-ENV MODEL_NAME=whisperx \
-    WG_CHUNK_SEC=10 \
-    WG_SAMPLE_RATE=16000 \
-    WG_GPU=true
-
+# Expose default Wyoming port for STT requests
 EXPOSE 10300
-CMD ["uvicorn", "server:app", "--host", "0.0.0.0", "--port", "10300"]
+
+HEALTHCHECK --interval=30s --timeout=5s \
+  CMD nvidia-smi || exit 1
+
+ENTRYPOINT ["entrypoint.sh"]
