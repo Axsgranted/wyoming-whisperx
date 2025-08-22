@@ -1,0 +1,5 @@
+torch==2.0.1+cu118 --extra-index-url https://download.pytorch.org/whl/cu118
+whisperx
+wyoming
+fastapi
+uvicorn[standard]
